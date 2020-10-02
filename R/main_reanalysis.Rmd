@@ -3,16 +3,20 @@ title: "Example analysis for Kaelyn's Big Blast project"
 output: html_notebook
 ---
 
-Tasks: 
+# Notes on the setup of the big_blast directory
 
-1. For each .db file, 
+* I will add these notes this weekend
+
+# Tasks for Kaelyn
+
+1. Find the approximate cutoff of bases, below which we should exclude
+    a. Read each .csv of BLAST "top hits" into R, using `read_csv()`
+    b. *randomly* subsample each of those data frames down to about 1000 entries or so (this will make it way easier to deal with the data sets, because the full datasets are huge)
+    c. "bind" those data frames together to create a single data frame, with a row for each sequence an a column for each column in the original data frame, plus a column identifying the data source (e.g. Metagenomes, Archaeal SAGs, etc)
+    d. Make a density plot using `ggplot()` and `geom_density()` of all of those sequence lengths, colored by data source
+2. For each .csv file of top hits, filter out the sequences shorter than your cutoff, using `filter()`
 
 ```{r}
-plot(cars)
+library(tidyverse)
+2+2
 ```
-
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
