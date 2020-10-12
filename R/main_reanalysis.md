@@ -19,7 +19,7 @@ Example analysis for Kaelyn’s Big Blast project
     4.  Make a density plot using `ggplot()` and `geom_density()` of all
         of those sequence lengths, colored by data source
 2.  For each .csv file of top hits, filter out the sequences shorter
-    than your cutoff, using `filter()`
+    than your cutoff, using `filter()` Ignore sag and sags
 
 <!-- end list -->
 
@@ -38,8 +38,8 @@ arc_is <- read_csv("/srv/data/big_blast/results/JGI_arc_isolates_top_bitscores.c
 arc_mags <- read_csv("/srv/data/big_blast/results/JGI_arc_mags_top_bitscores.csv")
 bac_is <- read_csv("/srv/data/big_blast/results/JGI_bac_isolates_top_bitscores.csv")
 bac_mag <- read_csv("/srv/data/big_blast/results/JGI_bac_mags_top_bitscores.csv")
-sags <- read_csv("/srv/data/big_blast/results/JGI_SAGs_top_bitscore.csv")
-sag <- read_csv("/srv/data/big_blast/results/JGI_SAGs_top_bitscores.csv")
+# not using sags <- read_csv("/srv/data/big_blast/results/JGI_SAGs_top_bitscore.csv")
+# not using sag <- read_csv("/srv/data/big_blast/results/JGI_SAGs_top_bitscores.csv")
 meta <- read_csv("/srv/data/big_blast/results/Metagenomes_top_bitscores.csv")
 
 p_arc_is <- ggplot(arc_is, aes(x=alignment_length)) + 
@@ -82,26 +82,18 @@ print(p_bac_mag)
 ![](main_reanalysis_files/figure-gfm/arc_check-4.png)<!-- -->
 
 ``` r
-p_sags <- ggplot(sags, aes(x=alignment_length)) +
-  geom_density() +
-  geom_vline(xintercept = 168)+
-  scale_x_log10()
-print(p_sags)
-```
+# p_sags <- ggplot(sags, aes(x=alignment_length)) +
+#   geom_density() +
+#   geom_vline(xintercept = 168)+
+#   scale_x_log10()
+# print(p_sags)
+# 
+# p_sag <- ggplot(sag, aes(x=alignment_length)) +
+#   geom_density() +
+#   geom_vline(xintercept = 170)+
+#   scale_x_log10()
+# print(p_sag)
 
-![](main_reanalysis_files/figure-gfm/arc_check-5.png)<!-- -->
-
-``` r
-p_sag <- ggplot(sag, aes(x=alignment_length)) +
-  geom_density() +
-  geom_vline(xintercept = 170)+
-  scale_x_log10()
-print(p_sag)
-```
-
-![](main_reanalysis_files/figure-gfm/arc_check-6.png)<!-- -->
-
-``` r
 p_meta <- ggplot(meta, aes(x=alignment_length)) +
   geom_density() +
   geom_vline(xintercept = 200)+
@@ -109,7 +101,7 @@ p_meta <- ggplot(meta, aes(x=alignment_length)) +
 print(p_meta)
 ```
 
-![](main_reanalysis_files/figure-gfm/arc_check-7.png)<!-- -->
+![](main_reanalysis_files/figure-gfm/arc_check-5.png)<!-- -->
 
 Now that we have read in all of the data sets, we want to add a column
 to each saying what the source is.
@@ -119,8 +111,8 @@ arc_is <- arc_is %>% mutate(source = "arc_isolates")
 arc_mags <- arc_mags %>% mutate(source = "arc_mags")
 bac_is <- bac_is %>% mutate(source = "bac_is")
 bac_mag <- bac_mag %>% mutate(source = "bac_mag")
-sags <- sags %>% mutate(source = "sags")
-sag <- sag %>% mutate(source = "sag")
+# sags <- sags %>% mutate(source = "sags")
+# sag <- sag %>% mutate(source = "sag")
 meta <- meta %>% mutate(source = "meta")
 ```
 
@@ -132,7 +124,7 @@ see what they look like on top of each other.
 
 ``` r
 all_data <- arc_is %>%
-  rbind(arc_mags)
+  rbind(arc_mags, bac_mag, meta, arc_is, bac_is)
 
   
 
@@ -141,12 +133,38 @@ all_data <- arc_is %>%
 
 p_dens_combined <- ggplot(all_data, aes(x=alignment_length, color=source)) + 
   geom_density() +
-  geom_vline(xintercept = 170) +
+  geom_vline(xintercept = 171) +
   scale_x_log10()
 print(p_dens_combined)
 ```
 
 ![](main_reanalysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+``` r
+cutoff <- 170
+all_data_filter <- all_data%>%
+  filter(alignment_length>cutoff)
+# calculate mean bitscore
+bitscore_summary <- all_data_filter %>%
+  group_by(source) %>%
+  summarise(mean.bitscore=mean(bitscore, na.rm=TRUE),
+            sd.bitscore=sd(bitscore, na.rm=TRUE)) 
+```
+
+    ## `summarise()` ungrouping output (override with `.groups` argument)
+
+``` r
+print(bitscore_summary)
+```
+
+    ## # A tibble: 5 x 3
+    ##   source       mean.bitscore sd.bitscore
+    ##   <chr>                <dbl>       <dbl>
+    ## 1 arc_isolates          287.        223.
+    ## 2 arc_mags              257.        202.
+    ## 3 bac_is                301.        264.
+    ## 4 bac_mag               225.        179.
+    ## 5 meta                  216.        170.
 
 # Resources
 

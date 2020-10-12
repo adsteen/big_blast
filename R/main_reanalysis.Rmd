@@ -15,6 +15,7 @@ output: github_document
     c. "bind" those data frames together to create a single data frame, with a row for each sequence an a column for each column in the original data frame, plus a column identifying the data source (e.g. Metagenomes, Archaeal SAGs, etc)
     d. Make a density plot using `ggplot()` and `geom_density()` of all of those sequence lengths, colored by data source
 2. For each .csv file of top hits, filter out the sequences shorter than your cutoff, using `filter()`
+Ignore sag and sags
 
 ```{r setup, message=FALSE}
 library(dplyr)
@@ -30,8 +31,8 @@ arc_is <- read_csv("/srv/data/big_blast/results/JGI_arc_isolates_top_bitscores.c
 arc_mags <- read_csv("/srv/data/big_blast/results/JGI_arc_mags_top_bitscores.csv")
 bac_is <- read_csv("/srv/data/big_blast/results/JGI_bac_isolates_top_bitscores.csv")
 bac_mag <- read_csv("/srv/data/big_blast/results/JGI_bac_mags_top_bitscores.csv")
-sags <- read_csv("/srv/data/big_blast/results/JGI_SAGs_top_bitscore.csv")
-sag <- read_csv("/srv/data/big_blast/results/JGI_SAGs_top_bitscores.csv")
+# not using sags <- read_csv("/srv/data/big_blast/results/JGI_SAGs_top_bitscore.csv")
+# not using sag <- read_csv("/srv/data/big_blast/results/JGI_SAGs_top_bitscores.csv")
 meta <- read_csv("/srv/data/big_blast/results/Metagenomes_top_bitscores.csv")
 
 p_arc_is <- ggplot(arc_is, aes(x=alignment_length)) + 
@@ -59,17 +60,17 @@ p_bac_mag <- ggplot(bac_mag, aes(x=alignment_length)) +
   scale_x_log10()
 print(p_bac_mag)
 
-p_sags <- ggplot(sags, aes(x=alignment_length)) +
-  geom_density() +
-  geom_vline(xintercept = 168)+
-  scale_x_log10()
-print(p_sags)
-
-p_sag <- ggplot(sag, aes(x=alignment_length)) +
-  geom_density() +
-  geom_vline(xintercept = 170)+
-  scale_x_log10()
-print(p_sag)
+# p_sags <- ggplot(sags, aes(x=alignment_length)) +
+#   geom_density() +
+#   geom_vline(xintercept = 168)+
+#   scale_x_log10()
+# print(p_sags)
+# 
+# p_sag <- ggplot(sag, aes(x=alignment_length)) +
+#   geom_density() +
+#   geom_vline(xintercept = 170)+
+#   scale_x_log10()
+# print(p_sag)
 
 p_meta <- ggplot(meta, aes(x=alignment_length)) +
   geom_density() +
@@ -91,8 +92,8 @@ arc_is <- arc_is %>% mutate(source = "arc_isolates")
 arc_mags <- arc_mags %>% mutate(source = "arc_mags")
 bac_is <- bac_is %>% mutate(source = "bac_is")
 bac_mag <- bac_mag %>% mutate(source = "bac_mag")
-sags <- sags %>% mutate(source = "sags")
-sag <- sag %>% mutate(source = "sag")
+# sags <- sags %>% mutate(source = "sags")
+# sag <- sag %>% mutate(source = "sag")
 meta <- meta %>% mutate(source = "meta")
 
 ```
@@ -101,7 +102,7 @@ Each data source now has a column called `source`. The value of the column tells
 
 ```{r}
 all_data <- arc_is %>%
-  rbind(arc_mags)
+  rbind(arc_mags, bac_mag, meta, arc_is, bac_is)
 
   
 
@@ -110,9 +111,21 @@ all_data <- arc_is %>%
 
 p_dens_combined <- ggplot(all_data, aes(x=alignment_length, color=source)) + 
   geom_density() +
-  geom_vline(xintercept = 170) +
+  geom_vline(xintercept = 171) +
   scale_x_log10()
 print(p_dens_combined)
+```
+```{r}
+cutoff <- 170
+all_data_filter <- all_data%>%
+  filter(alignment_length>cutoff)
+# calculate mean bitscore
+bitscore_summary <- all_data_filter %>%
+  group_by(source) %>%
+  summarise(mean.bitscore=mean(bitscore, na.rm=TRUE),
+            sd.bitscore=sd(bitscore, na.rm=TRUE)) 
+print(bitscore_summary)
+
 ```
 
 
