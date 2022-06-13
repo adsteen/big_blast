@@ -33,7 +33,7 @@ genomes.path <- "/srv/data/GEM/faa"
 AAs <- c("A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y")
 # select random genomes
 set.seed(1999) # for reproducibility
-rand.genome.paths <- fs::dir_ls(genomes.path) %>% sample(size = 100, replace = FALSE)
+rand.genome.paths <- fs::dir_ls(genomes.path) %>% sample(size = 1000, replace = FALSE)
 ```
 
 Amino acid frequencies are calculated as the sum of the number of amino acids in each genome, divided by the sum of total amino acids. Thus it is automatically weighted to the size of genomes, which I think is appropriate.
@@ -125,7 +125,7 @@ The distribution looks roughly lognormal, with some skew towards the left. (Or m
 First make a vector of `n` lengths. `n=1000` seems like a decent start.
 
 ```{r}
-n <- 1000
+n <- 10000
 
 set.seed(944)
 lengths <- sample(all.lengths, size = n, replace = TRUE)
